@@ -1,0 +1,12 @@
+#!/Library/Frameworks/Python.framework/Versions/3.4/bin/python3
+
+
+#.encode('utf-8')
+
+
+sudo python2.7 -m easy_install (program)
+
+
+sudo python3.4 install (program)
+sudo python2.7 install (program)
+                
