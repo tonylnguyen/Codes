@@ -1,0 +1,429 @@
+---
+title: "Video Game Sales"
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+Graph Count: 20
+---
+
+I have used a data set I found off of Kaggle  
+
+VideoGame Sales as of 10/26/2016.
+Kaggle url - https://www.kaggle.com/gregorut/videogamesales
+orginal data - http://www.vgchartz.com/gamedb/
+
+I want to empthize that I did NOT look at the Kaggle users findings. I only used the cvs file provided.
+
+It should be noted that Sales are units sold in millions.
+
+My main interest with this data is Sales (regional sales?) by:
+(Naming these three "tri" in my questions)
+platform
+genre
+publisher
+
+ps1 - December 3, 1994
+ps2 - March 4, 2000
+ps3 - November 11, 2006
+
+
+questions
+which tri has the highest sales?
+what is the average sale per tri?
+if a publisher produces "x" genre, what is the expected sale?
+
+limitations of data:
+Not all games are included in this data (ie: indie games on steam)
+ 
+ 
+Importing the wine csv file
+```{r}
+setwd('/Users/tonynguyen/Desktop/Codes/Udacity/Data_Analyst/Project_4/Final Project')
+vg_data <- read.csv('vg_data.csv')
+
+str(vg_data)
+summary(vg_data)
+
+vg_data$Year <- as.integer(vg_data$Year)
+
+#I did these codes above, and noticed that Year was a character type instead of numeric. The codes changes Years as a numeric, and returns replaces N/A with NA
+
+vgyear <- as.integer(as.character(vg_data$Year))
+vg_data$Year <- ifelse(vg_data$Year == 'N/A', NA, vgyear)
+str(vg_data)
+remove(vg_data)
+
+```
+
+Plot Matrix
+```{r}
+library(GGally)
+names(vg_data)
+#Selecting which coloumns to plot
+vg_names <- c('Genre','NA_Sales','EU_Sales','JP_Sales','Other_Sales','Global_Sales')
+
+#creating a new data frame for vg_names
+vg_pairs <- vg_data[vg_names]
+
+#plotting vgpairs
+ggpairs(vg_pairs )
+
+ggsave('vg_pairs_plot.png')
+```
+
+Platform, Year, Publisher are not included because they had more levels than the threshold (15) allowed. The plot matrix does give us insight on the how genre effects sales based off region, and we can see the correlation between gobal sales and regional sales. Just looking off the graph, we can see that some genres are more popular then other genres, and it slightly changes between regions. It is also interesting to note that sales most strongly correlated with NA_Sales vs all other regions. I found this interesting because Japan has more popular publishers. 
+
+first I wanted to take a glimpse of publishers and sales
+
+Publishers Plots
+```{r}
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+
+
+
+# The plot below is just a general visualization of total games published for each publisher. Having a tick for each Publisher got messy so I removed it.
+ggplot( aes(x = Publisher ), data = vg_data) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  geom_bar() +
+  xlab("Publishers") +
+  ylab("Total Games Published") +
+  scale_y_continuous(breaks = seq(0,1400,200))
+
+grouped_publishers <- group_by(vg_data, Publisher)
+grouped_publishers <- summarise(grouped_publishers,
+                         games_published = n())
+                        
+mean(grouped_publishers$games_published)
+```
+We can see that most companies do not publisher a lot of games. Infact, the chart shows only 10 of 579 companies published more than 500 games. The average games published for a company is 28.7.
+
+Next, I would like to take a look at sales (in millions) of games.
+
+Sales over the years
+```{r}
+
+# A scatter plot of global sales through out the year
+
+vg_data$Year <- as.numeric(vg_data$Year)
+table(vg_data$Genre)
+ggplot(aes(x = Year, y = Global_Sales), data = vg_data) +
+  geom_point(alpha = 1/100, position = position_jitter(h=0)) +
+  scale_x_continuous(breaks = seq(1980,2020,4))
+
+
+```
+
+Taking a look at Global Sales, we can see that more sales are made around 1997. Growing up around this time, I speculate the increase of sales is due to better technology. Arcade games started be released around the 80s, and we can see some blotches of sales a few years after. Then it starts to die down after 1984. It does pick up again until the release of Sega Genesis and Super Nintendo consoles in 1989 and 1990. Shortly afterwards sales started to increase again and steadly increase for the years to come. Growing up in the 90's, I speculate that the increase of sales was due to better technology and newer generations of consoles. With technology always improving, I questioned why sales started to decrease in the late 2000's.
+
+```{r}
+#try to group publishers, and get an average of how many games are published a year (one plot)
+
+
+# group by year, publisher count, and global_sales total
+grouped_year <- group_by(vg_data, Year)
+
+grouped_year <- summarise(grouped_year,
+                         sum_sale = sum(Global_Sales),
+                         Publisher_count = n_distinct(Publisher),
+                         total_games_made = length(Name)
+                         )
+
+unique(vg_data$Publisher)
+# I had issues trying to find the unique count of publishers for each year and after searching the web, and trying different "solutions," I found it easier to create a new data frame by using the aggregate function. Then aggregate didnt work but i found n_distint int he plyr library.
+
+ggplot(aes(y=sum_sale, x=Year), data = grouped_year) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = seq(0,2017,5))
+
+```
+To get a better look at the data, I graphed the total sales per year. In this graph we can better see that not only did the sales of games decreased around 2006/2007, it sharply fell. Sales started to stagger when the PS4 and Xbox One was released, but quickly declined. For almost 15 years, the sales of games have been over 200 million, and it took only 7 years, for it to fall under 200 million. 
+
+There could be a number of reasons that can explain the sudden drop in sales. One of reasons could simply be that publishers just did not realse as much games as it did in the past.
+```{r}
+#compare how many games publishers release a year (two plots)
+
+ggplot(aes(x=Year, y =total_games_made), data = sales.by.year) +
+  geom_point() +
+  geom_line(aes(color = sum_sale))
+
+with(grouped_year, cor.test(x = sum_sale, y =total_games_made))
+
+
+# the plot and cor.test shows that there is a direct correlation between numbers of games created and sales. This is in part due to their being less publishers as well.
+```
+Here we can see that the creation of games peaked around 2007. Running a correlations test, we can see that numbers of games created is highly correleated with Sales. A reason why there are less games, could be that publishing companies started to go out of business.
+
+```{r}
+ggplot(data = sales.by.year, aes(y=Publisher_count, x=Year)) +
+  geom_point() +
+  geom_line()
+```
+This graph verifies that publishing companies stop producing as many games as it did in the past. At this point, I do not have any data that can explain why pusblishing companies produce less games or even go out of business. I do have some theories thoough. 
+
+Looking vg chartz, you can dig deeper and see the type of sale for a particular game. For the most part, games are purchashed through retail stores, which a bulk of my data, retail game sales. The data does not contain all digital sales (ie: Sales made over the internet). With technology become better, there is not a need to buy a compact disk or cartridge. It would be cheaper for publishers to just provide the game digitally. 
+
+My theory of the decline in sales is becausegames created andpublished by smaller companies.  Or because mobile games (eg: cell phone game apps) became more popular as well.
+
+```{r}
+#Sales by region. NEED TO ANALYIZE THIS
+
+sales_by_year <- group_by(vg_data, Year)
+
+sales_by_year <- summarise(sales_by_year,
+                         eu_sumSales = sum(EU_Sales),
+                         jp_sumSales =  sum(JP_Sales),
+                         na_sumSales =  sum(NA_Sales),
+                         other_sumSales = sum(Other_Sales))
+
+library(dplyr)
+detach("package:dplyr", unload=TRUE)
+library(tidyr)
+detach("package:tidyr", unload=TRUE)
+
+sales_by_year <- gather(sales_by_year, 'region', 'sum', 2:ncol(sales_by_year), convert=T) 
+
+
+ggplot(data = sales_by_year, aes(x=Year, y=sum))+
+  geom_line(aes(color = region)) +
+  geom_line(stat = 'summary', fun.y = mean)
+
+```
+Next I wanted to compare sales throughout the region. We can see that North American consumers purchases accounts for most of the sales. I found this particularlly interesting because  
+
+Now that I have an indepth understanding of sales, publishers, and games created over the years, its time to ask questions about consoles and their sales
+
+```{r}
+#create a data frame just like sales by year, have values be console, and sales
+library(dplyr)
+detach("package:dplyr", unload=TRUE)
+library(tidyr)
+detach("package:tidyr", unload=TRUE)
+
+sales_by_platform <- group_by(vg_data, Platform)
+
+sales_by_platform <- summarise(sales_by_platform,
+                         eu_sumSales = sum(EU_Sales),
+                         jp_sumSales =  sum(JP_Sales),
+                         na_sumSales =  sum(NA_Sales),
+                         other_sumSales = sum(Other_Sales))
+
+sales_by_platform.regions <- gather(sales_by_platform, 'region', 'sum', 2:ncol(sales_by_year), convert=T) 
+
+ggplot(data = sales_by_platform.regions, aes(x=Platform, y=sum)) +
+  geom_line()
+
+```
+I wanted to get a general visualization of total sales made grouped by platforms. We can see that games for Xbox 360 generated the most sales. While most platforms sold gererated less than 200 million sales. We can also see that three generations of the Play Station consoles (of five) made over 200 million sales, which speaks highly of the success Playstion has had over the last 30 years. 
+
+With this information, I wanted to subset the data to focus on the 6 platforms that made over 200 million sales.
+```{r}
+top_six <- subset(vg_data, Platform == "Wii" | Platform == 'PS2' | Platform == 'X360' | Platform == 'PS3' | Platform == 'DS' |  Platform == 'PS')
+
+```
+
+
+```{r}
+# Sales consoles
+ggplot(data = top_six, aes(x = Year, y = Global_Sales)) +
+  geom_point(aes(color = Platform), position = position_jitter(h=0), alpha = 1/5) +
+  coord_cartesian(xlim = seq(1990,2020,5), ylim = c(0,20)) +
+  geom_line(stat = 'summary', fun.y=mean)
+
+
+ggplot(data = top_six, aes(x = Year, y = Global_Sales)) +
+  geom_point(aes(color = Platform), position = position_jitter(h=0), alpha = 1/5) +
+  geom_line(stat = 'summary', fun.y=mean) +
+  geom_line(stat = 'summary', fun.y = quantile, 
+            fun.args = list(probs = .9), linetype = 2, color = 'blue') +
+   geom_line(stat = 'summary', fun.y = quantile, 
+            fun.args = list(probs = .1), linetype = 2, color = 'red') +
+  coord_trans(y = 'sqrt')+
+  ylim(c(0,15))
+```
+I like this plot because it shows the trending console over the years. Even though there s a lot of overplotting, we can see that the Play Station (One) had the most sold games until early 2000's when it's successor, PS2, took over. It was not till after 2005 that the other consoles started to dilute the market. We can see that having more than 2.5 million games sold is extremely rare. I can understand why publishered would advertise when a game has sold over a million copies, its a pretty big deal. But lets look at it through a line graph.
+
+
+```{r}
+# group by year, then show the total sale of each platform by that year
+
+ggplot(data = top_six, aes(x = Year, y = Global_Sales)) +
+  geom_line()
+
+str(vg_data)
+str(global_sales.top_six)
+
+
+global_sales.top_six <- top_six %>%
+  group_by(Year, Platform)  %>%
+  summarise( 
+          sum = sum(Global_Sales),
+          n=n())  %>%
+  arrange(Year)
+
+global_sales.top_six$Year <- as.integer(global_sales.top_six$Year)
+
+ggplot(data = global_sales.top_six, aes(x = Year, y = sum)) +
+  geom_line(aes(color = Platform))
+
+
+global_sales.top_six$Year == 2020 & global_sales.top_six$Platform == "DS"
+
+
+```
+
+
+*we can see that the DS has a game relased 1986, even though the console was released in 2004. I did some research and multiple sites stated that the game was released in 1986*
+
+The graph is a little messy but it gets us a better visualization of the life span of a console and when they peaked in sales.
+
+```{r}
+
+ggplot(data = top_six, aes(x = Platform, y = Global_Sales)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0,.87)) +
+  stat_summary(fun.y = mean, shape = 4, geom = 'point')
+ 
+```
+In this blox plot we can see that most of the sales are under 1 millon, and the median is near 250 million units sold. The DS is lower then the rest, but that is to be expect since a DS is a hand held console, making it unable to play higher quality games, while the others are not. It is interesting to note, that the avgerages of games sold are above the 50th precentile. 
+
+What I found most intreging is the PS3 and X360 having very similar box plots. My previous plots showed that X360 did better then teh ps3, but this box plot shows that they did fairly similar in sales. Considering that these two are "rival" platforms, lets look at it in ratios.
+
+```{r}
+ggplot(data = global_sales.top_six, aes(x = Year, y = sum)) +
+  geom_line(aes(color = Platform), data = subset(global_sales.top_six, Platform == 'X360')) +
+  geom_line(aes(color = Platform), data = subset(global_sales.top_six, Platform == 'PS3')) +
+  coord_cartesian(xlim = seq(2010,2016,1))
+```
+EXPLAIN ^^^^
+
+
+Another thing i wanted to look at is which Genre and sales. Personally RPG's are my faviorate, but how did it compare to shooters when games like Call of Duty became more popular?
+
+```{r}
+#overview of genre and their sales
+
+ggplot(data = subset(vg_data, !is.na(Global_Sales)), aes(x= Year, y=Global_Sales))+
+  geom_point(position = position_jitter(h=0), aes(color = Genre))
+
+str(vg_data$Global_Sales)
+```
+
+This plot is extremely hard to read. I can't read it.
+
+```{r}
+global_sales.genre <- vg_data %>%
+  group_by(Year, Genre)  %>%
+  summarise( 
+          sum = sum(Global_Sales),
+          n=n())  %>%
+  arrange(Year)
+
+
+ggplot(data = global_sales.genre, aes(x= Year, y=sum))+
+  geom_line( aes(color = Genre))
+```
+Here it's a little bit messy, but we can a get overview of genre trends. 
+
+Looking at this data also made me question it. For example what is a "Misc" Genre? After taking a look the data, these Misc genre are party games like Mario Party, or Exersicing/Education games. It made me realize that some games by have Multiple genre, ie: Mario Part could be both puzzle and fighting or Guitar Hero could be a Simulation or Puzzle.
+
+It is also intresting to note that some games are easier to develop then others. For example, with a RPG creators would to develope the an entire virtual world from scratch, while a Shooter game you can use a blue pring and create a world around it.
+
+```{r}
+ggplot(data = global_sales.genre, aes(x = Year, y = sum)) +
+  geom_line(aes(color = Genre), data = subset(global_sales.genre, Genre == 'Sports')) +
+  geom_line(aes(color = Genre), data = subset(global_sales.genre, Genre == 'Role-Playing')) 
+```
+We can take a look at multple genre's but for the sake of time, I decided to choose Role-Playing games and Sports Games. In this graph, we can see multiple spikes/trends throughout the years. For sports, the spikes can be explained by world events. The FIFA World Cup was in 2006 and 2008, which correlates spikes in sports games sales. Role-playing games on the other hand has a series of spikes, which I cannot fully explain. My best guess would be that RPG's are the most time consuming game to develop and possiblly the most expensive. 
+
+
+```{r}
+# region, genre, count
+
+region_sales.genre <- vg_data %>%
+  group_by(Year, Genre)  %>%
+  summarise( eu_sumSales = sum(EU_Sales),
+                         jp_sumSales =  sum(JP_Sales),
+                         na_sumSales =  sum(NA_Sales),
+                         other_sumSales = sum(Other_Sales)) %>%
+  arrange(Year)
+
+region.genre.sales <-  gather(region_sales.genre, 'region', 'sales', -Year, -Genre) 
+
+library(dplyr)
+detach("package:dplyr", unload=TRUE)
+library(tidyr)
+detach("package:tidyr", unload=TRUE)
+
+region.genre.sales <- region.genre.sales %>%
+  group_by(Year, Genre, region)  %>%
+  summarise(sum = sum(sales))%>%
+  arrange(Year)
+
+ggplot(data = subset(region.genre.sales, region == "eu_sumSales" & Genre == 'Action'), aes(y = sum, x = Year)) +
+  geom_line() +
+  geom_line(data= subset(region.genre.sales, region == "jp_sumSales" & Genre == 'Action'), color = 'red') +
+  geom_line(data= subset(region.genre.sales, region == "na_sumSales" & Genre == 'Action'), color = 'green') +
+  geom_line(data= subset(region.genre.sales, region == "other_sumSales" & Genre =='Action'),color = 'blue')
+
+```
+
+```{r}
+ggplot(data = subset(region.genre.sales, region == "eu_sumSales" & Genre == 'Sports'), aes(y = sum, x = Year)) +
+  geom_line() +
+  geom_line(data= subset(region.genre.sales, region == "jp_sumSales" & Genre == 'Sports'), color = 'red') +
+  geom_line(data= subset(region.genre.sales, region == "na_sumSales" & Genre == 'Sports'), color = 'green') +
+  geom_line(data= subset(region.genre.sales, region == "other_sumSales" & Genre =='Sports'),color = 'blue')
+```
+
+```{r}
+#linar regression, with over game sales
+
+lm1 <- lm(sum_sale~Year, data = grouped_year)
+
+
+ggplot(data = grouped_year, aes(y=Publisher_count, x=Year)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "red") 
+
+```
+
+```{r}
+#lm with genre/ region sales
+
+ggplot(data = subset(region.genre.sales, region == "eu_sumSales" & Genre == 'Sports'), aes(y = sum, x = Year)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "red") 
+
+```
+
+
+
+[x] Console VS Sales  
+[] Genre VS Sales  (need LR)
+[] Genre VS Reginal (Sales need LR)
+[] Publisher VS Genre (with Sales ie: which publisher makes best shooter)
+
+
+We can see that global video games sales did not kick off until after the mid 90's. During this time, The PS1 and N64 consoles were released. One can speculate that technology drasticly improved as time went on causing an increase in sales. 
+
+
+more indie games being released, more developer (mobile phone games), digital sales etc, could contribute.
+
+Reflection
+Where you had a hard time
+- converting years into numeric
+- geom line = mean, when theres no y axis
+- grouping vs aggregate 
+- lots of qualitative V quanititiave, would like more quant VS quant
+- Reshaping my data using gather/melt/dcast was hard
+
+How can the data be improved?
+First and formost, not have data from 2020 or include presale
+fix the 271 data with no year
+Digital Sales VS Retail (not all included?)
+population of region (better to ratio it out?)

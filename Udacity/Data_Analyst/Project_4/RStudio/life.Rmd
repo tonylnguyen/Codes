@@ -1,0 +1,100 @@
+---
+title: "Life"
+output: html_document
+---
+# The Gapminder website contains over 500 data sets with information about
+# the world's population. Your task is to download a data set of your choice
+# and create 2-5 plots that make use of the techniques from Lesson 3.
+
+# You might use a simple histogram, a boxplot split over a categorical variable,
+# or a frequency polygon. The choice is yours!
+
+# You can find a link to the Gapminder website in the Instructor Notes.
+
+# Once you've completed your investigation, create a post in the discussions that includes:
+#       1. any questions you answered, your observations, and summary statistics
+#       2. snippets of code that created the plots
+#       3. links to the images of your plots
+
+# You can save images by using the ggsave() command.
+# ggsave() will save the last plot created.
+# For example...
+#                  qplot(x = price, data = diamonds)
+#                  ggsave('priceHistogram.png')
+
+# ggsave currently recognises the extensions eps/ps, tex (pictex),
+# pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+# Copy and paste all of the code that you used for
+# your investigation, and submit it when you are ready.
+# ====================================================================================
+
+importing data and needed libraries
+```{r}
+library(rJava)
+library(xlsxjars)
+library(xlsx)
+library(ggplot2)
+library(plyr)
+library(gridExtra)
+library(grid)
+
+library(tidyr)
+library(dplyr)
+
+life <- read.xlsx('life.xlsx', sheetIndex = 1)
+
+
+# keep this just in case
+names(life)[names(life)=="Life.expectancy"] <- "Countries"
+
+life <- gather(life, 'year', 'age', 2:ncol(life), convert=T) #bring years down into rows with 'year' and 'age' columns
+
+life$year <- factor(life$year, ordered=T) #Convert year to ordered factor
+
+
+```
+My tests
+```{r}
+myvars <- c("United States", "Japan", "United Kingdom")
+
+test <-subset(life, Countries == 'United States')
+
+test <- subset(life, Countries == 'United States' | Countries == 'Japan' | Countries == 'United Kingdom')
+
+test <- t(test)
+names(my_data)[names(my_data)=="Countries"] <- "Years"
+
+my_data <- my_data[-1,]
+
+colnames(test)[1] <- 'Japan'
+colnames(test)[2] <- 'United_Kingdom'
+colnames(test)[3] <- 'United_States'
+
+head <- head(life)
+my_data <- as.data.frame.matrix(my_data)
+qplot(data = head, x= United_Kingdom)  
+
+#geom_bar(stat = "identity")
+
+```
+
+Histograms
+```{r}
+# creates 3 plots, and saves them into the variables
+x2016 <- qplot(data = life, x = X2016, bins = 50)
+x1900 <- qplot(data = life, x = X1900, bins = 50)
+x1800 <- qplot(data = life, x = X1800, bins = 50) 
+```
+
+# prints all 3 grid and assigns it to histo, saves it 
+histo <- grid.arrange(x2016, x1900, x1800, ncol=2, top = 'Life Expectancy by year')
+ggsave('life_histo.png', histo)
+
+
+Box Plot
+```{r}
+qplot(data = life,x = X2000) +
+  geom_freqpoly()
+```
+

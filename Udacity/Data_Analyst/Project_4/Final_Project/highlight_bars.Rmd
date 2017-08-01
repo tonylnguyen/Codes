@@ -1,0 +1,10 @@
+```{r}
+library('ggplot2')
+
+ggplot(data = phone, aes(x = company, y = precent)) +
+  geom_bar(stat = 'identity', aes(fill = (phone$company == 'Apple'))) +
+  geom_text(aes(label = precent), vjust=1.3, color = 'white') +
+  ggtitle('US Smart Phone Marketshare') +
+  theme(legend.position="none")
+```
+

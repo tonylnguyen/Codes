@@ -1,0 +1,118 @@
+Reads the tsv file and imports ggplot2
+```{r}
+list.files()
+fb_data <- read.csv("pseudo_facebook.tsv", sep = '\t')
+library(ggplot2)
+fb_data
+names(fb_data)
+```
+
+
+Histogram of birthdays
+```{r} 
+#using qplot
+qplot(x = dob_day, data = fb_data) + #qplot(x= x axsis, data= file) + tells r theres more data
+  scale_x_continuous(breaks = 1:31) #this sets the bars by day vs groping them
+```
+
+```{r}
+ggplot(aes(x = dob_day), data = fb_data) + 
+  geom_histogram(binwidth = 1) + 
+  scale_x_continuous(breaks = 1:31)
+
+#this is how you would do it using the ggplot function
+```
+
+```{r}
+#using qplot
+qplot(x = dob_day, data = fb_data) + 
+  scale_x_continuous(breaks = 1:31) +
+  facet_wrap(~dob_month, ncol = 3) #facet_wrap(~variable) #facet_grid(vertical ~ horizontal)
+```
+
+Friend Count
+```{r}
+# This histogram gives us a long tail data where we have a bulk of the data skewed.
+names(fb_data)
+qplot(x = friend_count, data = fb_data, binwidth = 50)
+```
+
+```{r}
+names(fb_data)
+# to look at a certian part of the histogram
+#qplot(x = friend_count, data = fb_data, xlim = c(0 ,1000))
+
+# another way of doing it, but with layers
+qplot(x = friend_count, data = subset(fb_data, !is.na(gender))) +
+  scale_x_continuous(limits = c(0,1000), breaks = seq(0,1000,50)) +
+  facet_wrap(~gender)
+
+table(fb_data$gender)
+  
+
+
+```
+
+Tenure breaking it by year
+```{r}
+qplot(x = tenure/365, data = fb_data, binwidth = .25,
+      color = I('black'),
+      xlab = "Years on Facebook") +
+  scale_x_continuous(breaks = seq(1,7,1), limits = c(0,7)) #this reorganizes x axsis
+```
+
+Facebook users based on age
+```{r}
+#seq(when to start, when to end, intervals)
+names(fb_data)
+qplot(x = age, data = subset(fb_data, !is.na((gender))), binwidth = 10,
+      xlab = 'Age') +
+  scale_x_continuous(breaks = seq(0,125,10), limits = c(10,125)) +
+  facet_wrap(~gender)
+```
+
+Histogram and Log10
+```{r}
+library(gridExtra)
+library(grid)
+p0 <- qplot(x=(friend_count), data = fb_data)
+p1 <- qplot(x=log10(friend_count + 1), data = fb_data)
+p2 <- qplot(x=sqrt(friend_count), data = fb_data)
+
+plogdif <- qplot(x=(friend_count), data = fb_data) +
+  scale_x_log10()
+
+# the difference is in the x axis, one shows log, other shows acutal friend count
+grid.arrange(p0, p1,p2, ncol=2)
+grid.arrange(p1, plogdif, ncol=2)
+```
+
+Frequency Polygon  
+```{r}
+qplot(x=www_likes, y = ..count../sum(..count..), data = subset(fb_data, !is.na(gender)), bins = 10, geom = 'freqpoly', color = gender)+
+  scale_x_continuous(limits = c(0,15000), breaks = seq(0,1200,50)) +
+  scale_x_log10()
+
+by(fb_data$www_likes, fb_data$gender,sum)
+```
+
+box plot 
+```{r}
+qplot(x=gender, y =friendships_initiated,  data = subset(fb_data, !is.na(gender)), geom = 'boxplot') +
+  coord_cartesian(ylim = c(0,250))
+
+by(fb_data$friend_count, fb_data$gender, summary)
+```
+
+running logical expressions
+```{r}
+fb_data$mobile_check_in <- NA
+fb_data$mobile_check_in <- ifelse(fb_data$mobile_likes > 0, 1,0)
+fb_data$mobile_check_in <- factor(fb_data$mobile_check_in)
+summary(fb_data$mobile_check_in)
+sum(fb_data$mobile_check_in==1)/length(fb_data$mobile_check_in)
+
+
+
+```
+

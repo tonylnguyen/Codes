@@ -1,0 +1,183 @@
+---
+title: "Problem Set"
+output: html_document
+---
+
+Imporing Data
+```{r}
+library(ggplot2)
+library(dplyr)
+data("diamonds")
+?diamonds
+```
+
+Scatter plot
+```{r}
+ggplot(data = diamonds, aes(x=carat, y=price)) +
+  geom_point(alpha = 1/20, position = position_jitter())
+```
+Observation: A majority of the 1.5 carat diamonds and under, are below 10,000 dollars in price. The data also forms vertical price lines indicating that there are a wide range of price per carat.
+
+Correlation 
+```{r}
+# price and x
+cor.test(diamonds$price, diamonds$x)
+
+# price and y
+cor.test(diamonds$price, diamonds$y)
+
+# price and z
+cor.test(diamonds$price, diamonds$z)
+```
+
+price and depth scatter plot
+```{r}
+ggplot(data = diamonds, aes(x = depth, y = price)) +
+  geom_point(alpha = 1/20)
+```
+
+
+scatter plot of depth and price
+```{r}
+ggplot(data = diamonds, aes(x = depth, y = price)) + 
+  geom_point(alpha = 1/100) +
+  scale_x_continuous(breaks = seq(0,80,2))
+
+```
+
+correlation of depth and price
+```{r}
+cor.test(diamonds$depth, diamonds$price)
+```
+
+price and carot minus top 1%
+```{r}
+
+#two ways of doing it, one with subset
+ggplot(data = subset(diamonds, price < quantile(price, c(.99))), aes(x=carat, y=price)) + geom_point(alpha = 1/100)
+
+
+#one using limits
+ggplot(data = diamonds, aes(x=carat, y=price)) + 
+  geom_point(alpha = 1/100) +
+  ylim(0,quantile(diamonds$price, .99))
+
+```
+
+
+Adding new column, volume!
+```{r}
+diamonds$volume = diamonds$x * diamonds$y * diamonds$z
+
+ggplot(aes(x = volume, y = price), data = diamonds) +
+  geom_point()
+```
+What do you observe? A great majority of the diamonds have a volume under 500 and a price under 10,000. We can see that there are some outliers. There are a few diamonds with 0 as their volume and one with a volume over 3,000.
+
+Corelation of price and volume minus those with 0 volume
+```{r}
+
+
+with(diamonds[diamonds$volume != 0 & diamonds$volume < 800,], cor.test(price, volume))
+
+#the line below was used to audit the data
+r <- diamonds[diamonds$volume != 0 & diamonds$volume < 800,]
+
+```
+
+
+Plot no >=800 and no 0 volumes
+```{r}
+ggplot(aes(x = volume, y = price), data = subset(diamonds, volume !=0 & volume <800)) + geom_point(alpha = 1/100) +
+  stat_smooth(method =  'lm') +
+  xlim(0,800) +
+  ylim(0,20000)
+
+```
+
+grouping by clarity and making a new dataframe
+```{r}
+
+diamondsByClarity <- diamonds %>%
+  group_by(clarity)  %>%
+  summarise( 
+          mean_price = mean(price),
+          median_price = median(price),
+          min_price = min(price),
+          max_price = max(price),
+          n=n())  %>%
+  arrange(clarity)
+```
+
+bar chars of mean prices
+Create two bar plots and print it out in one image
+```{r}
+library(gridExtra)
+diamonds_by_clarity <- group_by(diamonds, clarity)
+diamonds_mp_by_clarity <- summarise(diamonds_by_clarity, mean_price = mean(price))
+
+diamonds_by_color <- group_by(diamonds, color)
+diamonds_mp_by_color <- summarise(diamonds_by_color, mean_price = mean(price))
+
+p1 <- ggplot(aes(x = clarity, y = mean_price), data = diamonds_mp_by_clarity) +
+  geom_bar(stat = 'identity')
+
+p2 <- ggplot(aes(x = color, y = mean_price), data = diamonds_mp_by_color) +
+  geom_bar(stat = 'identity')
+
+diamonds_by_cut <- group_by(diamonds, cut)
+diamonds_mp_by_cut <- summarise(diamonds_by_cut, mean_price = mean(price))
+
+p3 <- ggplot(aes(x = cut, y = mean_price), data = diamonds_mp_by_cut) +
+  geom_bar(stat = 'identity')
+
+grid.arrange(p1,p2, p3, ncol=1)
+```
+
+Revisiting Gapminder
+```{r}
+library(rJava)
+library(xlsxjars)
+library(xlsx)
+library(plyr)
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(tidyr)
+
+murder <- read.xlsx('murder.xlsx', sheetIndex = 1)
+
+# renames the long col name to Countries
+names(murder)[names(murder)=="Total.number.of.deaths.from.interpersonal.violence"] <- "Countries" # renames the long col name to Countries
+
+#restructures murders into year and deaths
+my_data <- gather(murder, 'year', 'deaths', 2:ncol(murder), convert=T) #bring years down into rows with 'year' and 'age' columns
+
+# replaces all NA value to 0
+my_data[is.na(my_data)] <- 0
+
+#makes new data with the following parameters 
+new_data <- my_data %>%
+  group_by(year)  %>%
+  summarise( 
+          mean_deaths = mean(deaths),
+          median_death = median(deaths),
+          min_death = min(deaths),
+          max_deaths = max(deaths),
+          n=n())
+
+#bar graph
+ggplot(aes(x=year, y=mean_deaths), data = new_data) +
+  geom_bar(stat = 'identity')
+
+ggplot(aes(x=year, y=deaths), data = my_data) +
+  geom_point(alpha = 1/10)
+
+```
+
+
+
+
+
+

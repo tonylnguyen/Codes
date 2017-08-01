@@ -1,0 +1,126 @@
+---
+title: "murder"
+output: html_document
+---
+
+# The Gapminder website contains over 500 data sets with information about
+# the world's population. Your task is to download a data set of your choice
+# and create 2-5 plots that make use of the techniques from Lesson 3.
+
+# You might use a simple histogram, a boxplot split over a categorical variable,
+# or a frequency polygon. The choice is yours!
+
+# You can find a link to the Gapminder website in the Instructor Notes.
+
+# Once you've completed your investigation, create a post in the discussions that includes:
+#       1. any questions you answered, your observations, and summary statistics
+#       2. snippets of code that created the plots
+#       3. links to the images of your plots
+
+# You can save images by using the ggsave() command.
+# ggsave() will save the last plot created.
+# For example...
+#                  qplot(x = price, data = diamonds)
+#                  ggsave('priceHistogram.png')
+
+# ggsave currently recognises the extensions eps/ps, tex (pictex),
+# pdf, jpeg, tiff, png, bmp, svg and wmf (windows only).
+
+# Copy and paste all of the code that you used for
+# your investigation, and submit it when you are ready.
+# ====================================================================================
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Importing the data
+```{r}
+install.packages("xlsx", dep = T)  
+install.packages('rJava')
+install.packages('xlsxjars')
+install.packages('plyr')
+install.packages('reshape2')
+library(rJava)
+library(xlsxjars)
+library(xlsx)
+library(ggplot2)
+library(plyr)
+library(gridExtra)
+library(grid)
+library(reshape2)
+
+#Imports the xlsx data into murders
+murders <- read.xlsx('Murder.xlsx', sheetIndex = 1)
+
+# renames the long col name to Countries
+names(murders)[names(murders)=="Total.number.of.deaths.from.interpersonal.violence"] <- "Countries" # renames the long col name to Countries
+
+#restructures murders into year and deaths
+my_data <- gather(murders, 'year', 'deaths', 2:ncol(murders), convert=T) #bring years down into rows with 'year' and 'age' columns
+
+
+#both murders and my_data are used for this lesson
+``` 
+
+Summaries
+```{r}
+summary(murders$X2002)
+summary(murders$X2004)
+
+summary(my_data$deaths)
+```
+
+Histograms
+```{r}
+y2004 <- qplot(x = log10(X2004), bins = 50, data = subset(murders, !is.na(X2004))) 
+y2002 <- qplot(x = log10(X2002), bins = 50, data = subset(murders, !is.na(X2002))) 
+total <- qplot(x = log10(deaths),xlab="total murders", bins = 50, data = subset(my_data, !is.na(murders)))
+
+q<-grid.arrange(y2002, y2004, total, ncol=3)
+ggsave('murder_histogram.png', q)
+```
+
+Box Plots
+```{r}
+box <-qplot(data = my_data, x = year, y = deaths, ylab = "Murder totals of all Countries") +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0,500))
+
+box
+
+ggsave("muder_box.png", box)
+```
+
+Freqency Chart
+```{r}
+
+
+
+top_10_2002 <- head(murders[order(-murders$X2002),], 10)
+top_10_2004 <- head(murders[order(-murders$X2004),], 10)
+
+top2002 <- gather(top_10_2002, year, deaths,2:ncol(top_10_2002), convert=T)
+
+qplot(data = top2002, y = year, x= deaths, group=1) +
+  geom_line(color = 'red')
+
+two_years <- top_10_2002
+
+
+line_2002 <- qplot(data = top_10_2002, x = X2002, y= Countries, group=1) +
+  geom_line(color = 'red')
+
+line_2004 <- qplot(data = top_10_2002, x = X2004, y= Countries, group=1) +
+  geom_line(color = 'green')
+
+line_2002
+grid.arrange(line_2002, line_2004, ncol=1)
+
+
+ggplot(data=top2002, aes(x=year, y=deaths, group = Countries, color = Countries)) +
+    geom_line() 
+ggsave('top10line.png')
+```
+

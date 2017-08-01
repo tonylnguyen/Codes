@@ -1,0 +1,94 @@
+---
+title: "birthday"
+output: html_document
+---
+
+Import file
+```{r}
+install.packages("lubridate")
+library(lubridate)
+
+birthdays <- read.csv('birthdays.csv')
+
+colnames(birthdays)[2] <- "start"
+colnames(birthdays)[3] <- "end"
+colnames(birthdays)
+
+birthdays$start <- as.Date(birthdays$start, ("%m/%d/%Y"))
+birthdays[, "month"] <- month(birthdays$start)
+birthdays[, "day"] <- day(birthdays$start)
+str(birthdays)
+```
+
+plotting
+```{r}
+library(ggplot2)
+
+# by day
+qplot(data = birthdays, x =day(birthdays$start)) + 
+  scale_x_continuous(breaks = seq(1,31,1))
+
+# by month
+qplot(data = birthdays, x = month(birthdays$start)) + 
+  scale_x_continuous(breaks = seq(1,12,1))
+
+# by day and month
+qplot(data = birthdays, x =day(birthdays$start)) + 
+  scale_x_continuous(breaks = seq(1,31,1)) +
+  facet_wrap(~month(birthdays$start))
+
+
+
+```
+
+
+# How many people share your birthday? Do you know them?
+# (Reserve time with them or save money to buy them a gift!)
+```{r}
+nrow(subset(birthdays, day == 9, month== 10))
+```
+
+# Which month contains the most number of birthdays?
+```{r}
+qplot(data = birthdays, x = month(birthdays$start)) + 
+  scale_x_continuous(breaks = seq(1,12,1))
+
+# sets number of birthday months to a table
+mtable <- table(month(birthdays$start))
+
+#calls mtable, where mtable is equal to the max of mtable
+mtable[mtable == max(mtable)]
+
+
+```
+
+# How many birthdays are in each month?
+```{r}
+mtable
+```
+
+
+# Which day of the year has the most number of birthdays?
+```{r}
+qplot(data = birthdays, x =day(birthdays$start), binwidth =.5) + 
+  scale_x_continuous(breaks = seq(1,31,1))
+
+dtable <- table(day(birthdays$start))
+dtable[dtable == max(dtable)]
+```
+
+
+# Do you have at least 365 friends that have birthdays on everyday
+# of the year?
+```{r}
+qplot(data = birthdays, x =day(birthdays$start)) + 
+  scale_x_continuous(breaks = seq(1,31,1)) +
+  facet_wrap(~month(birthdays$start))
+
+allbirthdays <- (birthdays$start)
+length(allbirthdays[duplicated(allbirthdays)])
+
+#since there is only 126 unique birthdays, I do not have enough friends for every day of the year.
+
+```
+

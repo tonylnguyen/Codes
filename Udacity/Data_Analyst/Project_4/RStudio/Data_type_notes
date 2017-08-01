@@ -1,0 +1,54 @@
+Vectors
+
+Vectors are characters, numbers, and booleans
+
+a <- c(1,2,5.3,6,-2,4) # numeric vector
+b <- c("one","two","three") # character vector
+c <- c(TRUE,TRUE,TRUE,FALSE,TRUE,FALSE) #logical vector
+
+Vectors can only contain values of the same type, not mixing and matching
+
+d <- c(1,2,TRUE,"one") CANNOT work
+
+
+
+
+Matrices 
+
+A matrix is a collection of data elements arranged in a two-dimensional rectangular layout. The following is an example of a matrix with 2 rows and 3 columns.
+
+             
+A =   [2  4  3
+       1  5  7]
+
+This is how to create a matrix. The data elements must be of the same basic type.
+ 
+A = matrix( 
++   c(2, 4, 3, 1, 5, 7), # the data elements 
++   nrow=2,              # number of rows 
++   ncol=3,              # number of columns 
++   byrow = TRUE)        # fill matrix by rows (makes inputs c(2, 4, 3, 1, 5, 7)                                  horralzontally)
+
+This will result in the matrix A shown above. We can replace the vectors with a different type (eg: TRUE or "Hello"), but the entire data of the matrix has to be the same type.
+
+
+
+
+
+Arrays
+
+Arrays are the R data objects which can store data in more than two dimensions. For example − If we create an array of dimension (2, 3, 4) then it creates 4 rectangular matrices each with 2 rows and 3 columns. Arrays can store only data type.
+
+(not sure what this means? creates mutliple matricies?)
+
+
+
+Data Frames
+These are like matricies but the data types can be different values
+
+
+
+Lists
+contains a list of data which can be different data types
+list_data <- list("Red", "Green", c(21,32,11), TRUE, 51.23, 119.1)
+
