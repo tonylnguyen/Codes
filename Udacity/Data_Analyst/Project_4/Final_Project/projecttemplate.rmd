@@ -1,13 +1,14 @@
 ---
 output:
-  html_document: default
-  pdf_document: default
   word_document: default
+  pdf_document: default
+  html_document: default
 ---
 Sales of Video Games Exploration by Tony Nguyen
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+install.packages('TeX')
 
 library(ggplot2)
 library(GGally) 
