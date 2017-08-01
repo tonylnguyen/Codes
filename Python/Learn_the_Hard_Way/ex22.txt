@@ -1,0 +1,14 @@
+What we learned so far
+
+1) common operations (+ - * etc)
+2) strings and integers
+3) print statements!
+4) a little about imports and argv
+5) raw_inputs()
+6) how to use raw_inputs() and argv together
+7) variables
+8) parameters and functions
+9) reading files
+10) making copies of txt files
+11) writing over txt files
+12) functions and math

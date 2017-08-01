@@ -1,0 +1,93 @@
+a = 1
+b = a + 2
+a = 4
+print b
+# b = 3 because a was defined as 1 first and 'b' was called before the value of a changed
+
+a = 1
+# b = c + 2
+c = 9
+# print b
+ # and error is printed because the variable c was not defined with we called b
+
+a = "b"
+b = a
+c = "123"
+d = 123
+
+# double = "test"test"test"
+single = 'Tony said, "Hello."'
+# single \ means next charcter should not change
+# \\ means add a backslash in the string
+
+# when % is used with int, its a operation (ie: + - *)
+# when % is used with a str, it becomes a function
+#   ie: print "I said: %r." % x. %s for str%d is for int
+# %r is used in the back end to make it more clear what python is doing?
+
+print 2*4
+
+x = 4.53429057230582390
+print "I said: %10.2f." % x
+
+
+------
+
+a is smallest, z is largest
+a > z returns false because a has a lesser value than z
+
+
+if
+elif
+else
+
+This means only one thing can happen
+
+if
+if
+else
+
+this means the first 2 might happen, the last only happens when the 2nd if doesn't happen
+
+try to make a hang man game
+
+
+
+def one():
+    return 1
+
+f = one  - this sets the value for f, the function one()
+g = one() - g calls the function, and it returns 1, so the value for g  is 1
+h = f() = this returns 1, because we set the value of f, to be the one() function
+
+tab character is different from space characters
+
+
+
+example of if a loop going for infinate, this is how you can prevent that.
+while x<3:
+    print balfdal
+    if x > 3:
+        break
+
+
+__name__== 'main'
+
+^ this is a variable
+
+a string is a list
+
+
+test all the good parameters of a function. dont just test all the positive cases
+test for numbers, strings, list , try things that yeild unexpected results
+
+
+dictionary you loop through key and value pairs
+
+
+for k,v in blah: for key and value
+
+for k in blah: for key
+
+you can find a value through a key
+you cannot find a key through a value

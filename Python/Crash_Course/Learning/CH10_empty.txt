@@ -1,0 +1,4 @@
+Writing in a blank file.This is how you write 2 lines
+Remember to use breakers to space lines
+
+I am appending new lines to the file

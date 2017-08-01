@@ -1,0 +1,3 @@
+this file is for me.
+learning python is awesome
+this is a haiku

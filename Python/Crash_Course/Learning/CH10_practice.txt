@@ -1,0 +1,4 @@
+I have learned many things in python.
+I can make lists and dictionaries.
+Functions, if statements, while loops.
+Classes was tricky to learn but I got it.
