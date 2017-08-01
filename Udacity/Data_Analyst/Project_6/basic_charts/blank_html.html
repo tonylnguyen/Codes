@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+
+    <script>
+    function draw(data) {
+
+      var margin = 75,
+          width = 1400 - margin,
+          height = 600 - margin;
+
+      d3.select('body')
+        .append('h2')
+        .text("World Cup Attendance");
+
+      //This will create a break and allow us to look for bugs
+      debugger;
+
+      // creates the svg box where our chart will go
+      var svg = d3.select("body") // selects the body
+        .append("svg") // appends svg to the body
+          .attr("width", width + margin) // sets the width + height
+          .attr("height", height + margin)
+        .append('g') // appends g, this will be the chart
+            .attr('class','chart'); // gives it a chart class
+
+            /*
+            Dimple.js Chart construction code
+      */
+
+      // This creates the chart
+
+      var myChart = new dimple.chart(svg, data); // dimple will create the chart
+      var x = myChart.addTimeAxis("x", "year"); // x will be year
+      myChart.addMeasureAxis("y", "attendance"); // y will be attendance
+      x.dateParseFormat = '%Y' // changes time format to years
+      x.tickFormat = '%Y' // tick will only show years
+      myChart.addSeries(null, dimple.plot.line); // sets type of plot (and facets)
+      myChart.addSeries(null, dimple.plot.scatter);
+      myChart.draw(); // draws the plot
+    };
+
+
+    </script>
+
+  </head>
+  <body>
+    <script type="text/javascript">
+    /*
+      Use D3 (not dimple.js) to load the TSV file
+      and pass the contents of it to the draw function
+    */
+    d3.csv("debt.csv", draw);
+  </script>
+  </body>
+</html>
+
+d3.csv("datatest.csv", function(data) {
+       dataset=data
+       });
