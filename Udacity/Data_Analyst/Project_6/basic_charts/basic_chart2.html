@@ -29,7 +29,7 @@
             .text("World Cup Attendance");
 
           //This will create a break and allow us to look for bugs
-          debugger;
+
 
           // creates the svg box where our chart will go
           var svg = d3.select("body") // selects the body
@@ -62,7 +62,9 @@
     Use D3 (not dimple.js) to load the TSV file
     and pass the contents of it to the draw function
     */
-  d3.tsv("world_cup.tsv", draw);
+    var format = d3.time.format("%d-%m-%Y (%H:%M h)")
+
+    d3.tsv("world_cup.tsv",  draw);
   </script>
 </body>
 </html>
