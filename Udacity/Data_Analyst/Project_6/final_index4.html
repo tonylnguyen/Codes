@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head id='chartContainer'>
+  <meta charset='utf-8'>
+  <script src='http://d3js.org/d3.v3.min.js'></script>
+  <script src='http://dimplejs.org/dist/dimple.v2.0.0.min.js'></script>
+
+  <style>
+    h2 {
+      text-align: center;
+      color: black;
+    }
+  </style>
+
+  <script type='text/javascript'>
+    function draw(data) {
+      "use strict";
+
+      // removes any players that does not have a batting average. If a player
+      // doesn't bat, then there's no possible way from them to get a HR
+      data = data.filter(function(obj) {
+        return obj.avg !== 0;
+      });
+
+      var margin = 75,
+        width = 1275 - margin,
+        height = 600 - margin;
+
+      d3.select('body')
+        .append('h2')
+        .text("You don't have to be tall, to be good at baseball");
+
+      var svg = d3.select('body')
+        .append('svg')
+        .attr('width', width + margin)
+        .attr('height', height + margin)
+        .append('g')
+        .attr('class', 'chart');
+
+      // filers data by height for legend/indicator
+      data = dimple.filterData(data, 'height', ['65', '66', '67', '68',
+        '69', '70', '71', '72', '73',
+        '74', '75', '76', '77', '78',
+        '79', '80']);
+
+      // Create the legend/indicator chart on the right of the main chart
+      var indicator = new dimple.chart(svg, data);
+      indicator.setBounds(1200, 65, 153, 311);
+      indicator.assignColor('All', 'white', 'black', .7);
+      var y = indicator.addCategoryAxis('y', 'height');
+      y.addOrderRule('height', 'Desc');
+      y.title = 'Height in inches'
+      var x = indicator.addMeasureAxis('x', 'height');
+      x.hidden = true
+      var s = indicator.addSeries(null, dimple.plot.bar);
+      s.addEventHandler('click', onClick);
+      indicator.draw()
+
+      d3.selectAll('rect').attr('width', 30);
+
+      // Pick blue as the default and orange for the selected month
+      var defaultColor = indicator.assignColor('All', 'white', 'black', .7);
+      var indicatorColor = indicator.defaultColors[5];
+      // The frame duration for the animation in milliseconds
+      var frame = 3500;
+      var firstTick = true;
+
+      // adds instructions for legend interaction
+      svg.selectAll('title_text')
+        .data(['Click bar to select',
+          'and pause. Click again',
+          'to select height'
+        ])
+        .enter()
+        .append('text')
+        .attr('x', 1150)
+        .attr('y', function(d, i) {
+          return 15 + i * 12;
+        })
+        .style('font-family', 'sans-serif')
+        .style('font-size', '10px')
+        .style('color', 'Black')
+        .text(function(d) {
+          return d;
+        });
+      svg.selectAll('title_text')
+        .data(["The average number of home runs and batting average for each ",
+               "height group land fairly close to each other. Meaning height plays",
+               "a small role in a baseball player's skill."
+             ])
+        .enter()
+        .append('text')
+        .attr('x', 400)
+        .attr('y', function(d, i) {
+          return 10 + i * 12})
+        .style('font-family', 'sans-serif')
+        .style('font-size', '10px')
+        .style('color', 'Black')
+        .text(function(d) {
+          return d;
+        });
+
+
+      // draws chart
+      var myChart = new dimple.chart(svg, data);
+      var x = myChart.addMeasureAxis('x', 'avg');
+      var y = myChart.addMeasureAxis('y', 'HR');
+      x.title = 'Batting Averages'
+      y.title = '# of Home Runs'
+      var mySeries = myChart.addSeries(['name', 'height', 'handedness'], dimple.plot.scatter);
+      var mySeries2 = myChart.addSeries(null, dimple.plot.line);
+      mySeries2.aggregate = dimple.aggregateMethod.avg;
+      myChart.assignColor('All', 'white', 'black', .7);
+      x.tickFormat = ',.2f';
+      x.overrideMax = .4;
+      y.overrideMax = 600;
+      myChart.addLegend(595, 20, 500, 20, 'right');
+      d3.selectAll('circle#All___').attr('r',10);
+      // Add a storyboard to the main chart and set the tick event
+      var story = myChart.setStoryboard('height');
+
+
+      // Add a storyboard to the main chart and set the tick event
+      var story = myChart.setStoryboard('height', onTick);
+      // Change the frame duration
+      story.frameDuration = frame;
+      // Order the storyboard by height
+      story.addOrderRule('height');
+
+      // Draws the chart
+      myChart.draw();
+
+
+      // On click of the side chart
+      function onClick(e) {
+        story.goToFrame(e.yValue.toString());
+        story.pauseAnimation();
+      }
+
+      // Highlights the height legend and changes the names on the
+      // handedness legend + avg
+      function onTick(e) {
+
+
+
+        if (!firstTick) {
+          // Color all shapes the same
+          s.shapes
+            .transition()
+            .duration(frame / 2)
+            .style('fill', function(d) {
+              return (d.y === Number(e) ? indicatorColor.fill : defaultColor.fill)
+            })
+            .style('stroke', function(d) {
+              return (d.y === Number(e) ? indicatorColor.stroke : defaultColor.stroke)
+            });
+        }
+        d3.selectAll('circle#All___').attr('r',10);
+
+        d3.selectAll('.dimple-legend')
+          .select('.dimple-b').text('Both');
+
+        d3.selectAll('.dimple-legend')
+          .select('.dimple-l').text('Left');
+
+        d3.selectAll('.dimple-legend')
+          .select('.dimple-r').text('Right');
+
+        d3.selectAll('.dimple-legend')
+          .select('.dimple-all').text('Avg');
+
+        svg.selectAll('title_text')
+          .data(['Handedness'])
+          .enter()
+          .append('text')
+          .attr('x', 957)
+          .attr('y', 10)
+          .style('font-family', 'sans-serif')
+          .style('font-size', '10px')
+          .style('color', 'Black')
+          .text(function(d) {
+          return d;
+          });
+
+
+
+        firstTick = false;
+      }
+
+
+    };
+  </script>
+</head>
+
+
+<body>
+  <script type='text/javascript'>
+    /*
+                  uploads the data and calls the draw functions
+                  also changes some values into integers
+                */
+
+    d3.csv('baseball_data.csv', function(d) {
+      d['avg'] = parseFloat(d['avg']);
+      d['height'] = +d['height'];
+      d['weight'] = +d['weight'];
+      d['HR'] = +d['HR'];
+      return d
+    }, draw);
+  </script>
+</body>
+
+</html>

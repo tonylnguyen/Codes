@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head id="chartContainer">
+    <meta charset="utf-8">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+
+    <style>
+    /*aligns the title to the center*/
+      h2 {
+        text-align: center;
+        color: black;
+      }
+    </style>
+
+    <script type="text/javascript">
+      function draw(data) {
+
+        // Since not all players bat, I removed any player with 0 HR
+        data = data.filter(function(obj) {
+          return obj.avg !== 0; });
+
+        var margin = 75,
+            width = 1275 - margin,
+            height = 600 - margin;
+
+        // appends the title
+        d3.select('body')
+          .append('h2')
+          .text("Baseball");
+        // appends subtitle
+        d3.select('body')
+          .append('h2')
+          .text("Home runs VS Height");
+
+          // creates the svg box where our chart will go
+        var svg = d3.select("body") // selects the body
+          .append("svg") // appends svg to the body
+            .attr("width", width + margin) // sets the width + height
+            .attr("height", height + margin)
+          .append('g') // appends g, this will be the chart
+              .attr('class','chart'); // gives it a chart class
+
+        // creates the chart
+        var myChart = new dimple.chart(svg, data); // dimple will create the chart
+        var x = myChart.addCategoryAxis("x", "height"); // x will be heiht
+        var y = myChart.addAxis("y", "HR"); // y will be HR
+        x.title = 'Height';
+        y.title = 'Number of Home Runs'
+        var mySeries = myChart.addSeries('handedness', dimple.plot.scatter);
+        myChart.addLegend(600, 10, 500, 20, "right"); // legend for handedness
+
+
+        myChart.draw()
+
+      };
+    </script>
+  </head>
+
+
+  <body>
+    <script type="text/javascript">
+    /*
+      uploads the data and calls the draw functions
+      also changes some values into integers
+    */
+
+    d3.csv("baseball_data.csv", function(d) {
+      d['avg'] = +d['avg'];
+      d['height'] = +d['height'];
+      d['weight'] = +d['weight'];
+      d['HR'] = +d['HR'];
+      return d}, draw);
+
+    </script>
+  </body>
+</html>

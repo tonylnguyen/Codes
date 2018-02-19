@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head id="chartContainer">
+    <meta charset="utf-8">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+
+    <style>
+      h2 {
+        text-align: center;
+        color: black;
+      }
+    </style>
+
+    <script type="text/javascript">
+      function draw(data) {
+
+        // removes any players that does not have a batting average
+        data = data.filter(function(obj) {
+          return obj.avg !== 0; });
+        // creates pixal parameters
+        var margin = 75,
+            width = 1275 - margin,
+            height = 600 - margin;
+        // appends title
+        d3.select('body')
+          .append('h2')
+          .text("Baseball");
+        // appends subtitle
+        d3.select('body')
+          .append('h2')
+          .text("Home runs VS. Batting Average with height");
+
+        // creates the svg
+        var svg = d3.select("body") // selects the body
+          .append("svg") // appends svg to the body
+            .attr("width", width + margin) // sets the width + height
+            .attr("height", height + margin)
+          .append('g') // appends g, this will be the chart
+              .attr('class','chart'); // gives it a chart class
+
+        var myChart = new dimple.chart(svg, data); // dimple will create the chart
+        var x = myChart.addCategoryAxis("x", "avg"); // x will be avg
+        var y = myChart.addMeasureAxis("y", "HR"); // y will be HR
+        x.title = 'Batting Averages'
+        y.title = '# of Home Runs'
+        x.ticks = 5; // creates tick limits (didn't work)
+        var mySeries = myChart.addSeries('height', dimple.plot.scatter);
+        mySeries.aggregate = dimple.aggregateMethod.avg;
+        myChart.addLegend(600, 10, 500, 20, "right");
+
+        myChart.draw()
+      };
+    </script>
+  </head>
+
+
+  <body>
+    <script type="text/javascript">
+    /*
+      uploads the data and calls the draw functions
+      also changes some values into integers
+    */
+    d3.csv("baseball_data.csv", function(d) {
+      d['avg'] = +d['avg'];
+      d['height'] = +d['height'];
+      d['weight'] = +d['weight'];
+      d['HR'] = +d['HR'];
+      return d}, draw);
+
+    </script>
+  </body>
+</html>
