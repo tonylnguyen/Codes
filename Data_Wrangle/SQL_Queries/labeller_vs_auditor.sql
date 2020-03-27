@@ -38,7 +38,7 @@ labelers as (
 
 SELECT
   auditor.date AS DATE,
-  labelers.job_source AS job_source,
+  labelers.key_id AS key_id,
   labelers.office as Office,
   CONCAT('''', CAST(labelers.job_source AS VARCHAR)) AS labelers_job_source,
   labelers.reviewer_name AS labeler_name,
