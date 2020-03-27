@@ -27,7 +27,7 @@ SELECT
     location_name,
     COUNT(DISTINCT key_id) AS total_jobs_labelled,
     ROUND((3600 / AVG(review_time_s)), 2) AS avg_labelled_per_hour,
-    SUM(review_time_s) / 3600.0 AS total_review_time,
+    SUM(review_time_s) / 3600.0 AS total_review_time_hours,
     AVG(review_time_s) AS average_review_time_s
 FROM label
 GROUP BY
