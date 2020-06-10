@@ -10,7 +10,8 @@ Problem: Team/Actors data is pulled from SQL queries and copied/pasted into a ma
            Since python will be doing all the calculations, the need for excel formulas will be reduced. This will make the
            Excel file faster to run.
            
-Instructions: 1) Download all necessary files on to the desktop
+Instructions: 1) Download all necessary files on to the desktop (csv files can be obained from the SQL queries see:   https://github.com/tonylnguyen/Codes/tree/master/Data_Wrangle/SQL_Queries)
+
 (on mac)            a) Master Excel File
                     b) disagreements.csv
                     c) actors_metrics.csv
